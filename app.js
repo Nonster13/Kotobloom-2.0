@@ -483,9 +483,7 @@ async function loadAutomaticSubtitles() {
 
     console.error("Kotobloom transcript error:", error);
 
-    setStatus(
-      `Couldn't get subtitles: ${error.message}`,
-      "error"
+    setStatus("Subtitle error: " + error.name + " — " + error.message);
     );
 
     autoSubtitleBtn.textContent = "Try again";
