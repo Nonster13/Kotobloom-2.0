@@ -1,4 +1,3 @@
-
 const urlInput = document.querySelector("#ytUrl");
 const loadBtn = document.querySelector("#loadBtn");
 const videoWrap = document.querySelector("#videoWrap");
@@ -13,6 +12,12 @@ const popupMeaning = document.querySelector("#popupMeaning");
 const closePopup = document.querySelector("#closePopup");
 const dictionaryContent = document.querySelector("#dictionaryContent");
 
+// --------------------------------------------------
+// KOTOBLOOM BACKEND
+// --------------------------------------------------
+
+const API_BASE = "https://kotobloom-api.manfredkruja80.workers.dev";
+
 let subtitleCues = [];
 let activeCueIndex = -1;
 let videoElement = null;
@@ -20,11 +25,53 @@ let youtubePlayer = null;
 let youtubeReady = false;
 let syncInterval = null;
 let currentVideoId = null;
+let transcriptRequestToken = 0;
+
+// --------------------------------------------------
+// AUTOMATIC SUBTITLE BUTTON
+// --------------------------------------------------
+
+const autoSubtitleBtn = document.createElement("button");
+
+autoSubtitleBtn.id = "autoSubtitleBtn";
+autoSubtitleBtn.textContent = "Get Japanese subtitles";
+autoSubtitleBtn.disabled = true;
+
+autoSubtitleBtn.style.cssText = `
+  margin: 10px 8px 10px 0;
+  padding: 11px 17px;
+  border: 1px solid #456449;
+  border-radius: 9px;
+  background: #233529;
+  color: #b6e3a3;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: .2s;
+`;
+
+loadBtn.insertAdjacentElement("afterend", autoSubtitleBtn);
+
+autoSubtitleBtn.addEventListener("mouseenter", () => {
+  autoSubtitleBtn.style.background = "#304936";
+});
+
+autoSubtitleBtn.addEventListener("mouseleave", () => {
+  autoSubtitleBtn.style.background = "#233529";
+});
+
+autoSubtitleBtn.addEventListener("click", () => {
+  if (!currentVideoId) {
+    setStatus("Load a YouTube video first.", "error");
+    return;
+  }
+
+  loadAutomaticSubtitles();
+});
 
 // --------------------------------------------------
 // DICTIONARY
-// Temporary starter vocabulary. We'll connect a
-// full Japanese dictionary API in a later stage.
 // --------------------------------------------------
 
 const dictionary = {
@@ -216,6 +263,7 @@ const dictionary = {
 
 function setStatus(message, type = "normal") {
   status.textContent = message;
+
   status.style.color =
     type === "error" ? "#ef8989" :
     type === "success" ? "#b6e3a3" :
@@ -266,12 +314,22 @@ function loadYouTubeVideo() {
   }
 
   currentVideoId = videoId;
+  transcriptRequestToken++;
+
   closeDictionaryPopup();
   stopSync();
+
+  subtitleCues = [];
+  activeCueIndex = -1;
+
+  renderSubtitles();
 
   youtubePlayer = null;
   youtubeReady = false;
   videoElement = null;
+
+  autoSubtitleBtn.disabled = false;
+  autoSubtitleBtn.textContent = "Get Japanese subtitles";
 
   videoWrap.innerHTML = `
     <iframe
@@ -284,7 +342,7 @@ function loadYouTubeVideo() {
     </iframe>
   `;
 
-  setStatus("Video loaded. Waiting for player connection...", "success");
+  setStatus("Video loaded. You can now get Japanese subtitles.", "success");
 
   if (window.YT && window.YT.Player) {
     createYouTubePlayer();
@@ -321,9 +379,17 @@ function createYouTubePlayer() {
     events: {
       onReady: function () {
         youtubeReady = true;
-        setStatus("Video ready. Load subtitles to begin learning.", "success");
+
+        setStatus(
+          subtitleCues.length
+            ? "Video ready. Japanese subtitles are loaded."
+            : "Video ready. Get Japanese subtitles to begin learning.",
+          "success"
+        );
+
         startSync();
       },
+
       onError: function () {
         setStatus(
           "YouTube couldn't play this video. It may have embedding restrictions.",
@@ -332,6 +398,225 @@ function createYouTubePlayer() {
       }
     }
   });
+}
+
+// --------------------------------------------------
+// AUTOMATIC JAPANESE SUBTITLES
+// --------------------------------------------------
+
+async function loadAutomaticSubtitles() {
+  if (!currentVideoId) return;
+
+  const requestToken = ++transcriptRequestToken;
+  const videoUrl = `https://www.youtube.com/watch?v=${currentVideoId}`;
+
+  autoSubtitleBtn.disabled = true;
+  autoSubtitleBtn.textContent = "Getting subtitles...";
+
+  setStatus(
+    "Requesting Japanese subtitles. This may take a little while...",
+    "normal"
+  );
+
+  try {
+    const response = await fetch(`${API_BASE}/transcript`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        url: videoUrl
+      })
+    });
+
+    const data = await response.json();
+
+    if (requestToken !== transcriptRequestToken) return;
+
+    if (data.error) {
+      throw new Error(
+        data.details?.message ||
+        data.details?.details ||
+        data.message ||
+        data.error
+      );
+    }
+
+    let transcript = data;
+
+    // Large videos may need background processing.
+    if (data.jobId) {
+      transcript = await waitForTranscript(
+        data.jobId,
+        requestToken
+      );
+    }
+
+    if (requestToken !== transcriptRequestToken) return;
+
+    const cues = convertTranscriptToCues(transcript);
+
+    if (!cues.length) {
+      throw new Error(
+        "The service returned no timestamped Japanese subtitles."
+      );
+    }
+
+    subtitleCues = cues;
+    activeCueIndex = -1;
+
+    renderSubtitles();
+
+    if (youtubeReady || videoElement) {
+      startSync();
+    }
+
+    autoSubtitleBtn.textContent = "Refresh subtitles";
+
+    setStatus(
+      `Successfully loaded ${cues.length} Japanese subtitle lines.`,
+      "success"
+    );
+
+  } catch (error) {
+    if (requestToken !== transcriptRequestToken) return;
+
+    console.error("Kotobloom transcript error:", error);
+
+    setStatus(
+      `Couldn't get subtitles: ${error.message}`,
+      "error"
+    );
+
+    autoSubtitleBtn.textContent = "Try again";
+
+  } finally {
+    if (requestToken === transcriptRequestToken) {
+      autoSubtitleBtn.disabled = false;
+    }
+  }
+}
+
+// --------------------------------------------------
+// ASYNC TRANSCRIPT PROCESSING
+// --------------------------------------------------
+
+async function waitForTranscript(jobId, requestToken) {
+  const maximumAttempts = 90;
+
+  for (let attempt = 0; attempt < maximumAttempts; attempt++) {
+    if (requestToken !== transcriptRequestToken) {
+      throw new Error("Transcript request cancelled.");
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 2500));
+
+    setStatus(
+      `AI is processing the subtitles... (${attempt + 1}/${maximumAttempts})`,
+      "normal"
+    );
+
+    const response = await fetch(
+      `${API_BASE}/transcript/${encodeURIComponent(jobId)}`
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || data.error) {
+      throw new Error(
+        data.details?.message ||
+        data.message ||
+        data.error ||
+        "Transcript processing failed."
+      );
+    }
+
+    if (data.status === "completed") {
+      return data.result || data;
+    }
+
+    if (data.status === "failed") {
+      throw new Error(
+        data.error?.message ||
+        data.error?.details ||
+        "AI transcription failed."
+      );
+    }
+
+    if (
+      data.content &&
+      Array.isArray(data.content)
+    ) {
+      return data;
+    }
+  }
+
+  throw new Error(
+    "This video is taking too long to process. Please try again later."
+  );
+}
+
+// --------------------------------------------------
+// CONVERT SUPADATA RESPONSE TO KOTOBLOOM CUES
+// --------------------------------------------------
+
+function convertTranscriptToCues(response) {
+  let content = response?.content;
+
+  // Some completed jobs put the transcript inside result.
+  if (!Array.isArray(content) && Array.isArray(response?.result?.content)) {
+    content = response.result.content;
+  }
+
+  if (!Array.isArray(content)) {
+    return [];
+  }
+
+  const cues = content
+    .map((item, index) => {
+      if (!item || typeof item.text !== "string") {
+        return null;
+      }
+
+      // Supadata offsets and durations are milliseconds.
+      const start = Number(item.offset) / 1000;
+      const duration = Number(item.duration) / 1000;
+
+      if (!Number.isFinite(start) || start < 0) {
+        return null;
+      }
+
+      const safeDuration =
+        Number.isFinite(duration) && duration > 0
+          ? duration
+          : 3;
+
+      const text = item.text.trim();
+
+      if (!text) return null;
+
+      return {
+        start,
+        end: start + safeDuration,
+        text
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.start - b.start);
+
+  // Prevent overlapping or zero-length subtitle lines.
+  return cues.map((cue, index) => {
+    const nextCue = cues[index + 1];
+
+    if (nextCue && cue.end > nextCue.start) {
+      return {
+        ...cue,
+        end: nextCue.start
+      };
+    }
+
+    return cue;
+  }).filter(cue => cue.end > cue.start);
 }
 
 // --------------------------------------------------
@@ -403,6 +688,9 @@ vttFile.addEventListener("change", async function () {
   const file = vttFile.files[0];
   if (!file) return;
 
+  // Ignore any automatic transcript request still in progress.
+  transcriptRequestToken++;
+
   try {
     const text = await file.text();
     const parsed = parseSubtitleFile(text);
@@ -416,6 +704,7 @@ vttFile.addEventListener("change", async function () {
     activeCueIndex = -1;
 
     renderSubtitles();
+
     setStatus(
       `Successfully imported ${parsed.length} subtitle lines.`,
       "success"
@@ -444,7 +733,7 @@ function renderSubtitles() {
       <div class="subtitle-empty">
         <div>文</div>
         <strong>No subtitles loaded.</strong>
-        <p>Import a subtitle file to begin exploring Japanese.</p>
+        <p>Get Japanese subtitles or import a subtitle file to begin exploring Japanese.</p>
       </div>
     `;
     return;
@@ -488,7 +777,9 @@ function renderSubtitles() {
 }
 
 function createClickableWords(text, container) {
-  const segments = text.match(/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ー]+|[^\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ー]+/gu) || [text];
+  const segments = text.match(
+    /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ー]+|[^\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ー]+/gu
+  ) || [text];
 
   segments.forEach(segment => {
     if (/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ー]/u.test(segment)) {
@@ -598,6 +889,7 @@ function updateActiveSubtitle(index) {
 function formatTime(seconds) {
   const minutes = Math.floor(seconds / 60);
   const remaining = Math.floor(seconds % 60);
+
   return `${minutes}:${String(remaining).padStart(2, "0")}`;
 }
 
@@ -694,4 +986,3 @@ window.addEventListener("beforeunload", stopSync);
 window.addEventListener("resize", closeDictionaryPopup);
 
 console.log("Kotobloom 2.0 initialized.");
-
