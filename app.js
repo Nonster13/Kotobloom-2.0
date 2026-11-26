@@ -1,3 +1,4 @@
+
 const urlInput = document.querySelector("#ytUrl");
 const loadBtn = document.querySelector("#loadBtn");
 const videoWrap = document.querySelector("#videoWrap");
@@ -75,186 +76,42 @@ autoSubtitleBtn.addEventListener("click", () => {
 // --------------------------------------------------
 
 const dictionary = {
-  "こんにちは": {
-    reading: "こんにちは",
-    romaji: "konnichiwa",
-    meaning: "hello; good afternoon"
-  },
-  "ありがとう": {
-    reading: "ありがとう",
-    romaji: "arigatou",
-    meaning: "thank you"
-  },
-  "私": {
-    reading: "わたし",
-    romaji: "watashi",
-    meaning: "I; me"
-  },
-  "僕": {
-    reading: "ぼく",
-    romaji: "boku",
-    meaning: "I; me (commonly used by males)"
-  },
-  "日本": {
-    reading: "にほん",
-    romaji: "nihon",
-    meaning: "Japan"
-  },
-  "日本語": {
-    reading: "にほんご",
-    romaji: "nihongo",
-    meaning: "Japanese language"
-  },
-  "学校": {
-    reading: "がっこう",
-    romaji: "gakkou",
-    meaning: "school"
-  },
-  "先生": {
-    reading: "せんせい",
-    romaji: "sensei",
-    meaning: "teacher"
-  },
-  "友達": {
-    reading: "ともだち",
-    romaji: "tomodachi",
-    meaning: "friend"
-  },
-  "今日": {
-    reading: "きょう",
-    romaji: "kyou",
-    meaning: "today"
-  },
-  "明日": {
-    reading: "あした",
-    romaji: "ashita",
-    meaning: "tomorrow"
-  },
-  "昨日": {
-    reading: "きのう",
-    romaji: "kinou",
-    meaning: "yesterday"
-  },
-  "食べる": {
-    reading: "たべる",
-    romaji: "taberu",
-    meaning: "to eat"
-  },
-  "飲む": {
-    reading: "のむ",
-    romaji: "nomu",
-    meaning: "to drink"
-  },
-  "見る": {
-    reading: "みる",
-    romaji: "miru",
-    meaning: "to see; to watch"
-  },
-  "行く": {
-    reading: "いく",
-    romaji: "iku",
-    meaning: "to go"
-  },
-  "来る": {
-    reading: "くる",
-    romaji: "kuru",
-    meaning: "to come"
-  },
-  "帰る": {
-    reading: "かえる",
-    romaji: "kaeru",
-    meaning: "to return; to go home"
-  },
-  "好き": {
-    reading: "すき",
-    romaji: "suki",
-    meaning: "liked; favorite"
-  },
-  "大好き": {
-    reading: "だいすき",
-    romaji: "daisuki",
-    meaning: "love; really like"
-  },
-  "分かる": {
-    reading: "わかる",
-    romaji: "wakaru",
-    meaning: "to understand"
-  },
-  "違う": {
-    reading: "ちがう",
-    romaji: "chigau",
-    meaning: "to be different; that's wrong"
-  },
-  "何": {
-    reading: "なに / なん",
-    romaji: "nani / nan",
-    meaning: "what"
-  },
-  "誰": {
-    reading: "だれ",
-    romaji: "dare",
-    meaning: "who"
-  },
-  "何で": {
-    reading: "なんで",
-    romaji: "nande",
-    meaning: "why; how come"
-  },
-  "本当": {
-    reading: "ほんとう",
-    romaji: "hontou",
-    meaning: "truth; really"
-  },
-  "面白い": {
-    reading: "おもしろい",
-    romaji: "omoshiroi",
-    meaning: "interesting; funny"
-  },
-  "可愛い": {
-    reading: "かわいい",
-    romaji: "kawaii",
-    meaning: "cute"
-  },
-  "美味しい": {
-    reading: "おいしい",
-    romaji: "oishii",
-    meaning: "delicious"
-  },
-  "大丈夫": {
-    reading: "だいじょうぶ",
-    romaji: "daijoubu",
-    meaning: "okay; all right"
-  },
-  "ちょっと": {
-    reading: "ちょっと",
-    romaji: "chotto",
-    meaning: "a little; wait a moment"
-  },
-  "もう": {
-    reading: "もう",
-    romaji: "mou",
-    meaning: "already; anymore"
-  },
-  "まだ": {
-    reading: "まだ",
-    romaji: "mada",
-    meaning: "still; not yet"
-  },
-  "でも": {
-    reading: "でも",
-    romaji: "demo",
-    meaning: "but; however"
-  },
-  "だから": {
-    reading: "だから",
-    romaji: "dakara",
-    meaning: "so; therefore"
-  },
-  "そして": {
-    reading: "そして",
-    romaji: "soshite",
-    meaning: "and then"
-  }
+  "こんにちは": { reading: "こんにちは", romaji: "konnichiwa", meaning: "hello; good afternoon" },
+  "ありがとう": { reading: "ありがとう", romaji: "arigatou", meaning: "thank you" },
+  "私": { reading: "わたし", romaji: "watashi", meaning: "I; me" },
+  "僕": { reading: "ぼく", romaji: "boku", meaning: "I; me (commonly used by males)" },
+  "日本": { reading: "にほん", romaji: "nihon", meaning: "Japan" },
+  "日本語": { reading: "にほんご", romaji: "nihongo", meaning: "Japanese language" },
+  "学校": { reading: "がっこう", romaji: "gakkou", meaning: "school" },
+  "先生": { reading: "せんせい", romaji: "sensei", meaning: "teacher" },
+  "友達": { reading: "ともだち", romaji: "tomodachi", meaning: "friend" },
+  "今日": { reading: "きょう", romaji: "kyou", meaning: "today" },
+  "明日": { reading: "あした", romaji: "ashita", meaning: "tomorrow" },
+  "昨日": { reading: "きのう", romaji: "kinou", meaning: "yesterday" },
+  "食べる": { reading: "たべる", romaji: "taberu", meaning: "to eat" },
+  "飲む": { reading: "のむ", romaji: "nomu", meaning: "to drink" },
+  "見る": { reading: "みる", romaji: "miru", meaning: "to see; to watch" },
+  "行く": { reading: "いく", romaji: "iku", meaning: "to go" },
+  "来る": { reading: "くる", romaji: "kuru", meaning: "to come" },
+  "帰る": { reading: "かえる", romaji: "kaeru", meaning: "to return; to go home" },
+  "好き": { reading: "すき", romaji: "suki", meaning: "liked; favorite" },
+  "大好き": { reading: "だいすき", romaji: "daisuki", meaning: "love; really like" },
+  "分かる": { reading: "わかる", romaji: "wakaru", meaning: "to understand" },
+  "違う": { reading: "ちがう", romaji: "chigau", meaning: "to be different; that's wrong" },
+  "何": { reading: "なに / なん", romaji: "nani / nan", meaning: "what" },
+  "誰": { reading: "だれ", romaji: "dare", meaning: "who" },
+  "何で": { reading: "なんで", romaji: "nande", meaning: "why; how come" },
+  "本当": { reading: "ほんとう", romaji: "hontou", meaning: "truth; really" },
+  "面白い": { reading: "おもしろい", romaji: "omoshiroi", meaning: "interesting; funny" },
+  "可愛い": { reading: "かわいい", romaji: "kawaii", meaning: "cute" },
+  "美味しい": { reading: "おいしい", romaji: "oishii", meaning: "delicious" },
+  "大丈夫": { reading: "だいじょうぶ", romaji: "daijoubu", meaning: "okay; all right" },
+  "ちょっと": { reading: "ちょっと", romaji: "chotto", meaning: "a little; wait a moment" },
+  "もう": { reading: "もう", romaji: "mou", meaning: "already; anymore" },
+  "まだ": { reading: "まだ", romaji: "mada", meaning: "still; not yet" },
+  "でも": { reading: "でも", romaji: "demo", meaning: "but; however" },
+  "だから": { reading: "だから", romaji: "dakara", meaning: "so; therefore" },
+  "そして": { reading: "そして", romaji: "soshite", meaning: "and then" }
 };
 
 // --------------------------------------------------
@@ -413,10 +270,7 @@ async function loadAutomaticSubtitles() {
   autoSubtitleBtn.disabled = true;
   autoSubtitleBtn.textContent = "Getting subtitles...";
 
-  setStatus(
-    "Requesting Japanese subtitles. This may take a little while...",
-    "normal"
-  );
+  setStatus("Requesting Japanese subtitles. This may take a little while...");
 
   try {
     const response = await fetch(`${API_BASE}/transcript`, {
@@ -424,12 +278,29 @@ async function loadAutomaticSubtitles() {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        url: videoUrl
-      })
+      body: JSON.stringify({ url: videoUrl })
     });
 
-    const data = await response.json();
+    const responseText = await response.text();
+
+    let data;
+
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      throw new Error(
+        `Backend returned invalid JSON (HTTP ${response.status}).`
+      );
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        data.details?.message ||
+        data.message ||
+        data.error ||
+        `Backend request failed (HTTP ${response.status}).`
+      );
+    }
 
     if (requestToken !== transcriptRequestToken) return;
 
@@ -444,12 +315,8 @@ async function loadAutomaticSubtitles() {
 
     let transcript = data;
 
-    // Large videos may need background processing.
     if (data.jobId) {
-      transcript = await waitForTranscript(
-        data.jobId,
-        requestToken
-      );
+      transcript = await waitForTranscript(data.jobId, requestToken);
     }
 
     if (requestToken !== transcriptRequestToken) return;
@@ -483,7 +350,14 @@ async function loadAutomaticSubtitles() {
 
     console.error("Kotobloom transcript error:", error);
 
-    setStatus("Subtitle error: " + error.name + " — " + error.message);
+    const message =
+      error instanceof TypeError
+        ? "Network/CORS error. Could not reach the backend. Check Cloudflare."
+        : error.message;
+
+    setStatus(
+      `Subtitle error: ${error.name} — ${message}`,
+      "error"
     );
 
     autoSubtitleBtn.textContent = "Try again";
@@ -510,15 +384,24 @@ async function waitForTranscript(jobId, requestToken) {
     await new Promise(resolve => setTimeout(resolve, 2500));
 
     setStatus(
-      `AI is processing the subtitles... (${attempt + 1}/${maximumAttempts})`,
-      "normal"
+      `AI is processing the subtitles... (${attempt + 1}/${maximumAttempts})`
     );
 
     const response = await fetch(
       `${API_BASE}/transcript/${encodeURIComponent(jobId)}`
     );
 
-    const data = await response.json();
+    const responseText = await response.text();
+
+    let data;
+
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      throw new Error(
+        `Backend returned invalid JSON while checking the job (HTTP ${response.status}).`
+      );
+    }
 
     if (!response.ok || data.error) {
       throw new Error(
@@ -541,10 +424,7 @@ async function waitForTranscript(jobId, requestToken) {
       );
     }
 
-    if (
-      data.content &&
-      Array.isArray(data.content)
-    ) {
+    if (Array.isArray(data.content)) {
       return data;
     }
   }
@@ -561,8 +441,10 @@ async function waitForTranscript(jobId, requestToken) {
 function convertTranscriptToCues(response) {
   let content = response?.content;
 
-  // Some completed jobs put the transcript inside result.
-  if (!Array.isArray(content) && Array.isArray(response?.result?.content)) {
+  if (
+    !Array.isArray(content) &&
+    Array.isArray(response?.result?.content)
+  ) {
     content = response.result.content;
   }
 
@@ -571,12 +453,11 @@ function convertTranscriptToCues(response) {
   }
 
   const cues = content
-    .map((item, index) => {
+    .map(item => {
       if (!item || typeof item.text !== "string") {
         return null;
       }
 
-      // Supadata offsets and durations are milliseconds.
       const start = Number(item.offset) / 1000;
       const duration = Number(item.duration) / 1000;
 
@@ -602,7 +483,6 @@ function convertTranscriptToCues(response) {
     .filter(Boolean)
     .sort((a, b) => a.start - b.start);
 
-  // Prevent overlapping or zero-length subtitle lines.
   return cues.map((cue, index) => {
     const nextCue = cues[index + 1];
 
@@ -619,7 +499,6 @@ function convertTranscriptToCues(response) {
 
 // --------------------------------------------------
 // SUBTITLE FILE IMPORT
-// Supports VTT and SRT
 // --------------------------------------------------
 
 function parseTimestamp(timestamp) {
@@ -686,7 +565,6 @@ vttFile.addEventListener("change", async function () {
   const file = vttFile.files[0];
   if (!file) return;
 
-  // Ignore any automatic transcript request still in progress.
   transcriptRequestToken++;
 
   try {
@@ -694,7 +572,10 @@ vttFile.addEventListener("change", async function () {
     const parsed = parseSubtitleFile(text);
 
     if (!parsed.length) {
-      setStatus("No valid subtitles found. Check your VTT or SRT file.", "error");
+      setStatus(
+        "No valid subtitles found. Check your VTT or SRT file.",
+        "error"
+      );
       return;
     }
 
